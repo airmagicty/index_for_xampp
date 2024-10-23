@@ -20,3 +20,47 @@
 > Если файлов мало, то подвал прижат к середине. Я хочу отказаться от подвала и добавить тект со сделано в верхнее меню
 > Нужно стилизовать каталоги: сделать более крупный текст, шрифт более подходящий стилю. Визуально папки от файлов тоже сделать различимыми
 > Все каталоги и ссылки должны быть кликабельными - вести до каталогов/файлов (их местоположения)
+
+
+
+
+php поправь код, который сканирует директорию и выводит список, чтобы:
+> Если мы дошли до максимального уровня вложности, то при открытии его будем показывать "..."
+> Все каталоги и папки должны быть ссылками до их местоположения, тольк не формата "file:///C:/xampp/htdocs/путь", а формата "localhost/путь"
+
+<?php
+// PHP Function to Scan Directories and Generate HTML
+function scanDirectory($dir, $depth = 0, $maxDepth = 3) {
+    if ($depth > $maxDepth) return '';
+
+    $html = '<ul>';
+    $files = scandir($dir);
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') continue;
+        $path = $dir . DIRECTORY_SEPARATOR . $file;
+        if (is_dir($path)) {
+            $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . $file;
+            $html .= scanDirectory($path, $depth + 1, $maxDepth);
+            $html .= '</li>';
+        } else {
+            $html .= '<li class="directory-item">' . $file . '</li>';
+        }
+    }
+    $html .= '</ul>';
+    return $html;
+}
+
+// Scan current directory
+echo scanDirectory(__DIR__);
+?>
+
+
+
+Напиши функцию php, которая на вход принимает путь формата
+file:///C:/xampp/htdocs/путь
+и превращает его в localhost/путь
+
+> получить входную строку, найти в ней htdocs/
+> обрезать все до htdocs/
+> htdocs заменить на localhost
+> return результат

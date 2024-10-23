@@ -112,7 +112,7 @@
 </head>
 <body>
 <header>
-        <div class="header-title">Welcome to My XAMPP Dashboard</div>
+        <div class="header-title">Welcome to My custom Dashboard </div>
         <div class="header-made">Made by airmagicty @ 2024</div>
     </header>
 
@@ -128,6 +128,26 @@
         <!-- Directory Structure -->
         <div class="directory">
             <?php
+            // PHP Function to Convers Directories
+            function convertPathToLocalhost($filePath) {
+                // Находим позицию 'htdocs/' в пути
+                $htdocsPos = strpos($filePath, 'htdocs\\');
+            
+                // Если 'htdocs/' найден, продолжаем преобразование
+                if ($htdocsPos !== false) {
+                    // Получаем подстроку, начиная с 'htdocs/'
+                    $relativePath = substr($filePath, $htdocsPos + strlen('htdocs\\'));
+            
+                    // Формируем новый путь, заменяя 'htdocs/' на 'localhost/'
+                    $convertedPath = 'http:\\\\localhost\\' . $relativePath;
+            
+                    return $convertedPath;
+                }
+            
+                // Если 'htdocs/' не найден, возвращаем оригинальный путь
+                return $filePath;
+            }
+
             // PHP Function to Scan Directories and Generate HTML
             function scanDirectory($dir, $depth = 0, $maxDepth = 3) {
                 if ($depth > $maxDepth) return '';
@@ -138,11 +158,11 @@
                     if ($file === '.' || $file === '..') continue;
                     $path = $dir . DIRECTORY_SEPARATOR . $file;
                     if (is_dir($path)) {
-                        $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . $file;
+                        $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . '<a href="' . convertPathToLocalhost($path) . '">' . $file . '</a>';
                         $html .= scanDirectory($path, $depth + 1, $maxDepth);
                         $html .= '</li>';
                     } else {
-                        $html .= '<li class="directory-item">' . $file . '</li>';
+                        $html .= '<li class="directory-item">' . '<a href="' . convertPathToLocalhost($path) . '">' . $file . '</a>' . '</li>';
                     }
                 }
                 $html .= '</ul>';
@@ -161,7 +181,7 @@
             // Toggle visibility of nested directories
             document.querySelectorAll('.toggle-btn').forEach(button => {
                 button.addEventListener('click', function () {
-                    const nextUl = this.nextElementSibling;
+                    const nextUl = this.nextElementSibling.nextElementSibling;
                     if (nextUl && nextUl.tagName === 'UL') {
                         nextUl.style.display = nextUl.style.display === 'block' ? 'none' : 'block';
                         this.innerHTML = this.innerHTML === '[+]' ? '[-]' : '[+]'
