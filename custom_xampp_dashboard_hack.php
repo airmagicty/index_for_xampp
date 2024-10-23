@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My XAMPP Dashboard</title>
-    <!-- Base64 favicon -->
     <link href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAU/zkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEREREREREREREREREREREREBEREQAAAREQAREREREREREAERERERERERABEREREREREQAREREREREREAEREREREREQAREREREREQAREREREREQAREREREREQAREREREREQARERERERERAREREREREREREREREREREREREREREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" rel="icon" type="image/x-icon">
-    <!-- CSS styles -->
     <style>
         /* Основные стили */
         body {
@@ -55,7 +53,7 @@
             background-color: #00ff00;
             color: #005500;
         }
-        #search-bar {
+        .search-bar {
             width: 100%;
             max-width: 600px;
             padding: 10px;
@@ -99,102 +97,121 @@
         .directory-item.file a {
             font-style: italic;
         }
-        .blinking-cursor {
-            font-weight: bold;
-            font-size: 18px;
-            animation: blink 1s step-end infinite;
-        }
-        @keyframes blink {
-            from, to { color: transparent; }
-            50% { color: #00ff00; }
+        .match-highlight {
+            text-decoration: underline;
+            color: #ffcc00; /* Optional: change highlight color */
         }
     </style>
 </head>
 <body>
 <header>
         <div class="header-title">Welcome to My custom Dashboard </div>
-        <div class="header-made">Made by airmagicty @ 2024 @ v0.2</div>
+        <div class="header-made">Made by airmagicty @ 2024 @ v0.3</div>
     </header>
 
     <div class="container">
-        <!-- Functional Buttons -->
-         <div>
-             <button class="button" onclick="openPhpMyAdmin()">php my admin</button>
-             <button class="button" onclick="openXamppDashboard()">xampp dashboard</button>
-             <button class="button" onclick="openServerInfo()">server info</button>
-         </div>
-        <input type="text" id="search-bar" placeholder="Search files and directories...">
+        <div>
+            <button class="button" onclick="openPhpMyAdmin()">php my admin</button>
+            <button class="button" onclick="openXamppDashboard()">xampp dashboard</button>
+            <button class="button" onclick="openServerInfo()">server info</button>
+            <button class="button" onclick="reloadIndex()">↺</button>
+        </div>
+        <input type="text" id="search-bar" class="search-bar" placeholder="Search files and directories...">
 
-        <!-- Directory Structure -->
         <div class="directory">
             <?php
-            // PHP Function to Convers Directories
             function convertPathToLocalhost($filePath) {
-                // Находим позицию 'htdocs/' в пути
                 $htdocsPos = strpos($filePath, 'htdocs' . DIRECTORY_SEPARATOR);
-            
-                // Если 'htdocs/' найден, продолжаем преобразование
                 if ($htdocsPos !== false) {
-                    // Получаем подстроку, начиная с 'htdocs/'
                     $relativePath = substr($filePath, $htdocsPos + strlen('htdocs' . DIRECTORY_SEPARATOR));
-            
-                    // Формируем новый путь, заменяя 'htdocs/' на 'localhost/'
                     $convertedPath = 'http:'. DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'localhost' . DIRECTORY_SEPARATOR . $relativePath;
-            
                     return $convertedPath;
                 }
-            
-                // Если 'htdocs/' не найден, возвращаем оригинальный путь
                 return $filePath;
             }
 
-            // PHP Function to Scan Directories and Generate HTML
-            function scanDirectory($dir, $depth = 0, $maxDepth = 3) {
-                if ($depth > $maxDepth) return '';
+            function scanDirectory($dir, $depth = 0, $maxDepth = 3, $searchTerm = '') {
+                if ($depth > $maxDepth) return '<li class="directory-item">...</li>';
 
                 $html = '<ul>';
                 $files = scandir($dir);
+                $directories = [];
+                $regularFiles = [];
+
+                // Separate directories and files
                 foreach ($files as $file) {
                     if ($file === '.' || $file === '..') continue;
                     $path = $dir . DIRECTORY_SEPARATOR . $file;
                     if (is_dir($path)) {
-                        $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . '<a target="_blank" href="' . convertPathToLocalhost($path) . '">' . $file . '</a>';
-                        $html .= scanDirectory($path, $depth + 1, $maxDepth);
-                        $html .= '</li>';
+                        $directories[] = $file;
                     } else {
-                        $html .= '<li class="directory-item">' . '<a target="_blank" href="' . convertPathToLocalhost($path) . '">' . $file . '</a>' . '</li>';
+                        $regularFiles[] = $file;
                     }
                 }
+
+                // Sort directories and files
+                sort($directories);
+                sort($regularFiles);
+
+                // Process directories
+                foreach ($directories as $directory) {
+                    $path = $dir . DIRECTORY_SEPARATOR . $directory;
+                    $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . '<a target="_blank" href="' . convertPathToLocalhost($path) . '">' . highlightMatch($directory, $searchTerm) . '</a>';
+                    $html .= scanDirectory($path, $depth + 1, $maxDepth, $searchTerm);
+                    $html .= '</li>';
+                }
+
+                // Process files
+                foreach ($regularFiles as $file) {
+                    $html .= '<li class="directory-item">' . '<a target="_blank" href="' . convertPathToLocalhost($dir . DIRECTORY_SEPARATOR . $file) . '">' . highlightMatch($file, $searchTerm) . '</a>' . '</li>';
+                }
+
                 $html .= '</ul>';
                 return $html;
             }
 
+            function highlightMatch($text, $searchTerm) {
+                if (empty($searchTerm)) {
+                    return htmlspecialchars($text);
+                }
+                $highlighted = preg_replace('/(' . preg_quote($searchTerm, '/') . ')/i', '<span class="match-highlight">$1</span>', $text);
+                return htmlspecialchars($highlighted);
+            }
+
             // Scan current directory
-            echo scanDirectory(__DIR__);
+            echo scanDirectory(__DIR__, 0, 3, '');
             ?>
         </div>
     </div>
 
-    <!-- JavaScript for directory navigation and search -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Toggle visibility of nested directories
             document.querySelectorAll('.toggle-btn').forEach(button => {
                 button.addEventListener('click', function () {
                     const nextUl = this.nextElementSibling.nextElementSibling;
                     if (nextUl && nextUl.tagName === 'UL') {
                         nextUl.style.display = nextUl.style.display === 'block' ? 'none' : 'block';
-                        this.innerHTML = this.innerHTML === '[+]' ? '[-]' : '[+]'
+                        this.innerHTML = this.innerHTML === '[+]' ? '[-]' : '[+]';
                     }
                 });
             });
 
             // Search functionality
-            document.getElementById('search-bar').addEventListener('input', function () {
+            const searchBar = document.getElementById('search-bar');
+            searchBar.addEventListener('input', function () {
                 const searchTerm = this.value.toLowerCase();
                 document.querySelectorAll('.directory-item').forEach(item => {
                     const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                        let parent = item.parentElement;
+                        while (parent.tagName === 'UL') {
+                            parent.style.display = 'block';
+                            parent = parent.parentElement.parentElement;
+                        }
+                    } else {
+                        item.style.display = 'none';
+                    }
                 });
             });
         });
@@ -209,6 +226,10 @@
 
         function openServerInfo() {
             window.open('http://localhost/dashboard/phpinfo.php', '_blank');
+        }
+
+        function reloadIndex() {
+            location.reload();
         }
     </script>
 </body>
