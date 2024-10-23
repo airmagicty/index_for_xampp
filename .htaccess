@@ -1,0 +1,3 @@
+#Options +FollowSymLinks -Indexes
+Options -Indexes
+DirectoryIndex custom_xampp_dashboard_hack.php

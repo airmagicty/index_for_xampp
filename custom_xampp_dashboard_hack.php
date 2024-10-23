@@ -109,43 +109,20 @@
             50% { color: #00ff00; }
         }
     </style>
-    <!-- JavaScript for directory navigation and search -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Toggle visibility of nested directories
-            document.querySelectorAll('.toggle-btn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const nextUl = this.nextElementSibling;
-                    if (nextUl && nextUl.tagName === 'UL') {
-                        nextUl.style.display = nextUl.style.display === 'block' ? 'none' : 'block';
-                    }
-                });
-            });
-
-            // Search functionality
-            document.getElementById('search-bar').addEventListener('input', function () {
-                const searchTerm = this.value.toLowerCase();
-                document.querySelectorAll('.directory-item').forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(searchTerm) ? 'block' : 'none';
-                });
-            });
-        });
-
-        function openPhpMyAdmin() {
-            window.open('http://localhost/phpmyadmin', '_blank');
-        }
-    </script>
 </head>
 <body>
 <header>
         <div class="header-title">Welcome to My XAMPP Dashboard</div>
-        <div class="header-made">Сделано airmagicty @ 2024</div>
+        <div class="header-made">Made by airmagicty @ 2024</div>
     </header>
 
     <div class="container">
         <!-- Functional Buttons -->
-        <button class="button" onclick="openPhpMyAdmin()">Open phpMyAdmin</button>
+         <div>
+             <button class="button" onclick="openPhpMyAdmin()">php my admin</button>
+             <button class="button" onclick="openXamppDashboard()">xampp dashboard</button>
+             <button class="button" onclick="openServerInfo()">server info</button>
+         </div>
         <input type="text" id="search-bar" placeholder="Search files and directories...">
 
         <!-- Directory Structure -->
@@ -178,5 +155,41 @@
         </div>
     </div>
 
+    <!-- JavaScript for directory navigation and search -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Toggle visibility of nested directories
+            document.querySelectorAll('.toggle-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const nextUl = this.nextElementSibling;
+                    if (nextUl && nextUl.tagName === 'UL') {
+                        nextUl.style.display = nextUl.style.display === 'block' ? 'none' : 'block';
+                        this.innerHTML = this.innerHTML === '[+]' ? '[-]' : '[+]'
+                    }
+                });
+            });
+
+            // Search functionality
+            document.getElementById('search-bar').addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('.directory-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+                });
+            });
+        });
+
+        function openPhpMyAdmin() {
+            window.open('http://localhost/phpmyadmin', '_blank');
+        }
+
+        function openXamppDashboard() {
+            window.open('http://localhost/index.php', '_blank');
+        }
+
+        function openServerInfo() {
+            window.open('http://localhost/dashboard/phpinfo.php', '_blank');
+        }
+    </script>
 </body>
 </html>
