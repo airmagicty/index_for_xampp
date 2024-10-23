@@ -113,7 +113,7 @@
 <body>
 <header>
         <div class="header-title">Welcome to My custom Dashboard </div>
-        <div class="header-made">Made by airmagicty @ 2024</div>
+        <div class="header-made">Made by airmagicty @ 2024 @ v0.2</div>
     </header>
 
     <div class="container">
@@ -131,15 +131,15 @@
             // PHP Function to Convers Directories
             function convertPathToLocalhost($filePath) {
                 // Находим позицию 'htdocs/' в пути
-                $htdocsPos = strpos($filePath, 'htdocs\\');
+                $htdocsPos = strpos($filePath, 'htdocs' . DIRECTORY_SEPARATOR);
             
                 // Если 'htdocs/' найден, продолжаем преобразование
                 if ($htdocsPos !== false) {
                     // Получаем подстроку, начиная с 'htdocs/'
-                    $relativePath = substr($filePath, $htdocsPos + strlen('htdocs\\'));
+                    $relativePath = substr($filePath, $htdocsPos + strlen('htdocs' . DIRECTORY_SEPARATOR));
             
                     // Формируем новый путь, заменяя 'htdocs/' на 'localhost/'
-                    $convertedPath = 'http:\\\\localhost\\' . $relativePath;
+                    $convertedPath = 'http:'. DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'localhost' . DIRECTORY_SEPARATOR . $relativePath;
             
                     return $convertedPath;
                 }
@@ -158,11 +158,11 @@
                     if ($file === '.' || $file === '..') continue;
                     $path = $dir . DIRECTORY_SEPARATOR . $file;
                     if (is_dir($path)) {
-                        $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . '<a href="' . convertPathToLocalhost($path) . '">' . $file . '</a>';
+                        $html .= '<li class="directory-item"><span class="toggle-btn">[+]</span> ' . '<a target="_blank" href="' . convertPathToLocalhost($path) . '">' . $file . '</a>';
                         $html .= scanDirectory($path, $depth + 1, $maxDepth);
                         $html .= '</li>';
                     } else {
-                        $html .= '<li class="directory-item">' . '<a href="' . convertPathToLocalhost($path) . '">' . $file . '</a>' . '</li>';
+                        $html .= '<li class="directory-item">' . '<a target="_blank" href="' . convertPathToLocalhost($path) . '">' . $file . '</a>' . '</li>';
                     }
                 }
                 $html .= '</ul>';
